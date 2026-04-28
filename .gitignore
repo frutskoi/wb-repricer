@@ -1,1 +1,14 @@
 service-account.json\nnode_modules/\n.clasp.json\n.env
+{
+  "type": "service_account",
+  "project_id": "winter-runway-488505-k9",
+  "private_key_id": "70238a9529410450ee1bd9ff297dd1cb1436361a",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDKwOejHrHZViC/\ndvjuvIANwc9iTyUD3qdUyRdVEImw+mHOUmFNCueKof9M3b/W/nhc2XcQluL8MvYP\nGUIJGNbLc9z3xjABKZiVcP2q/avs3IxKWwoeUJ/1tPYyR56Ky7J5NTpyE+JKsUYv\nC0RguH6phcMGbi/dfr6hpApxSd+opmlg1sgR+yIabm9m5fQCNC17xF7WmlEXy/xu\ndtqekeiOhd4KSJhVGhXSxKZIRK71M3Fu0fUii4XilHxhUBDvrmWSWs+psHiedsoz\n9Y49mZM5uAKrdVK+oLewgjwsrLcXUMPhWEIOGA91rGNqL6op5R323KlkijbgWsjO\nqwakK6ZrAgMBAAECggEAHb5+UjQkO9G3zNQuTA+ulYC+Oho0QES/YDUpTXBh/Wrt\n7ZpbmIrQpvTXAuFxIvWClinM9CET5uhZp/i48vldjCFQ5FnYca3hgDhAQ9UiY1rY\n4JD0g2KpOh7fE0c7H098vO1YcqMvdRexR8uBBNNsDtXcY4Acri4e1zsSe8YuSouZ\ndlY0e0Aj0Na3f2MomcuGwUNhzlVMz7n4bAklMy1opn594dPeHY5xhFZRVHuYXb98\n804XQY894mDlatoqsnANUR9SMmsdA1j6dwB3ff3ch9aP75EEYZUpzVtDvPG/P0sH\n9/dIZRC1rB1XTYMM5susbOcw63OBefrGDoFxrIsVEQKBgQD3sFWNmrFuBAwH9dFf\n6VjpgPhK6EHEdznRdGNviJb0s56tNAwlr4SZVRR4F8nbTLlwsGGMv/vZpHlFVkTM\npGEAg6csw0lZJ/VE2nskht0AO0WqT8VGfbFTZt2H7qMiJ2JRTsI3hnMuDaBn/uXU\nmoHgfbajlwTSt2WZ/Yzo72hjUwKBgQDRjpK+rt5MMJa+Xe+YExoJgziQG9k06t/u\nqGnsQNefjEmsd0qNgIfwq4bCACvz+VryOpck0vd/QNP+U11p9slL2teVQZd7z35J\nSeKwQ070fe8QEAq5B1FXh0YmPoxVI1l2h/2jB9mQe6lfHToGSpzfZNViIv/3Oan1\n/NNg3k6liQKBgQCkVLieR4j6ffLhgSUVpkLYQTn6sNeZmqSgo8CpKg1FcrqPHZ4F\njsrB1GHNP7MsLV5HNq6x7FoSzv2qlA73WwQEjFRo7XQHk+w1b2MOG/AajDivQ1eW\naiQxOmk2G4zeRxUC7ucKYcifQGkxNjuT76LFp4J6TOLlTso4/bD0hopSgwKBgFYp\nKsjgGWJ2L+TBtrtuTyxOGbmW2a3aTIxSDosm9gERq1EQE0Uu7bXUsKmfbHL5uZ0S\n3gYz/7MAsqlFGYlyAL4BktY5i9FKNQBpMp2KbzIzfVG7Zs1A5v74Da231fdDe4sy\nyuR3W8r+LVuAJtVjZDCtwtaA0YGS4gDUHQ0dGnURAoGBAIixbv139hNeNiZ5+576\nPR6PPg8qU/UAm+m1dymwvoJ3POHeQWyPVb1tPQAtk+ZcYcOcnI2Vistv8hLwEEqC\nkmxnMLOrVt2WdxH0oaUSfVGF6dzGWlqmymj85Ew3dBwYNXGFnFtbhQE3AlJ/sjxB\nAe0TKS2T0zS8ovAD4LOn3vtR\n-----END PRIVATE KEY-----\n",
+  "client_email": "kozhzam2@winter-runway-488505-k9.iam.gserviceaccount.com",
+  "client_id": "112739793767873677499",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/kozhzam2%40winter-runway-488505-k9.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
