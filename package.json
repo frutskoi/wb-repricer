@@ -1,0 +1,12 @@
+{
+  "name": "wb-repricer",
+  "version": "1.0.0",
+  "description": "Wildberries репрайсер на основе Google Sheets и Apps Script",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"No tests\""
+  },
+  "author": "Fedor",
+  "license": "MIT",
+  "dependencies": {}
+}
