@@ -1,0 +1,59 @@
+{
+  "version": 1,
+  "updatedAt": "2026-05-07T08:25:18.701Z",
+  "entries": {
+    "memory:memory/2026-04-27.md:1:18": {
+      "key": "memory:memory/2026-04-27.md:1:18",
+      "path": "memory/2026-04-27.md",
+      "startLine": 1,
+      "endLine": 18,
+      "source": "memory",
+      "snippet": "# 2026-04-27 — Первый день ## Bootstrap - Первая встреча с Фёдором - Определили: я — КожЗам, он — Мой Господин! - Настроены: IDENTITY.md, USER.md, SOUL.md - Telegram привязан (pairing code RH8S379Z, ID 471899386, @rutskoifp) ## Правила от Фёдора - Все внешние действия — спрашивать + план - Отвечать подробно, коротко и ясно - Часовой пояс: Екатеринбург (UTC+5) ## Техническое - Модель: zai/glm-5.1 - Плагины: telegram, zai, memory-core, active-memory - Исправлена проблема с chokidar в plugin-runtime-deps",
+      "recallCount": 19,
+      "dailyCount": 0,
+      "groundedCount": 0,
+      "totalScore": 12.570337997586112,
+      "maxScore": 0.8131758952903989,
+      "firstRecalledAt": "2026-04-27T16:16:26.492Z",
+      "lastRecalledAt": "2026-05-07T08:25:18.701Z",
+      "queryHashes": [
+        "63aca9812215",
+        "33e5d7109007",
+        "ac1e54c3db82",
+        "dddcd6dac153",
+        "ced1995e85bf",
+        "48836ab9a79f",
+        "7a6e448fabcb",
+        "7cbdbf45488c",
+        "692ec969a1a1",
+        "a7e048b8ce2e",
+        "e55206d4aacf",
+        "cd4c53f6933d",
+        "f3a6d5c0431a",
+        "458090f47d50",
+        "280dd44f032e",
+        "eadb316549a8",
+        "d5fce0ffc6d5",
+        "d49c35140ab0",
+        "84aada660476"
+      ],
+      "recallDays": [
+        "2026-04-27",
+        "2026-04-28",
+        "2026-04-30",
+        "2026-05-01",
+        "2026-05-07"
+      ],
+      "conceptTags": [
+        "identity.md",
+        "user.md",
+        "soul.md",
+        "zai/glm-5.1",
+        "memory-core",
+        "active-memory",
+        "plugin-runtime-deps",
+        "первый"
+      ]
+    }
+  }
+}
