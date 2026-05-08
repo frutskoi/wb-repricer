@@ -101,6 +101,11 @@ In group chats where you receive every message, be **smart about when to contrib
 
 Participate, don't dominate.
 
+**⚠️ EXCEPTION - Personal Work Group -1003707068198:**
+This is a 1:1 work group with Fyodor where each topic = separate project.
+**ALWAYS respond to all messages in this group.** No HEARTBEAT_OK, no silence rules.
+This is a collaborative workspace, not a public group chat.
+
 ### 😊 React Like a Human!
 
 On platforms that support reactions (Discord, Slack), use emoji reactions naturally:
