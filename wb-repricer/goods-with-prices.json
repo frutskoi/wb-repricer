@@ -1,0 +1,178 @@
+{
+  "data": {
+    "listGoods": [
+      {
+        "nmID": 151509365,
+        "vendorCode": "герметонА300337006ш4",
+        "sizes": [
+          {
+            "sizeID": 253784910,
+            "price": 106103,
+            "discountedPrice": 41380.17,
+            "clubDiscountedPrice": 41380.17,
+            "techSizeName": "0"
+          }
+        ],
+        "currencyIsoCode4217": "RUB",
+        "discount": 61,
+        "clubDiscount": 0,
+        "editableSizePrice": false
+      },
+      {
+        "nmID": 151509360,
+        "vendorCode": "герметонА300337006ш3",
+        "sizes": [
+          {
+            "sizeID": 253784904,
+            "price": 79866,
+            "discountedPrice": 31147.74,
+            "clubDiscountedPrice": 31147.74,
+            "techSizeName": "0"
+          }
+        ],
+        "currencyIsoCode4217": "RUB",
+        "discount": 61,
+        "clubDiscount": 0,
+        "editableSizePrice": false
+      },
+      {
+        "nmID": 151509289,
+        "vendorCode": "герметонА15Л0337004ш4",
+        "sizes": [
+          {
+            "sizeID": 253784834,
+            "price": 70276,
+            "discountedPrice": 27407.64,
+            "clubDiscountedPrice": 27407.64,
+            "techSizeName": "0"
+          }
+        ],
+        "currencyIsoCode4217": "RUB",
+        "discount": 61,
+        "clubDiscount": 0,
+        "editableSizePrice": false
+      },
+      {
+        "nmID": 151509204,
+        "vendorCode": "Practik4.0/15шт",
+        "sizes": [
+          {
+            "sizeID": 253784745,
+            "price": 64283,
+            "discountedPrice": 25070.37,
+            "clubDiscountedPrice": 25070.37,
+            "techSizeName": "0"
+          }
+        ],
+        "currencyIsoCode4217": "RUB",
+        "discount": 61,
+        "clubDiscount": 0,
+        "editableSizePrice": false
+      },
+      {
+        "nmID": 151509209,
+        "vendorCode": "комфорт100237005ш4",
+        "sizes": [
+          {
+            "sizeID": 253784750,
+            "price": 61609,
+            "discountedPrice": 24027.51,
+            "clubDiscountedPrice": 24027.51,
+            "techSizeName": "0"
+          }
+        ],
+        "currencyIsoCode4217": "RUB",
+        "discount": 61,
+        "clubDiscount": 0,
+        "editableSizePrice": false
+      },
+      {
+        "nmID": 151509248,
+        "vendorCode": "КомфортА20PRO/3шт",
+        "sizes": [
+          {
+            "sizeID": 253784793,
+            "price": 59782,
+            "discountedPrice": 23912.8,
+            "clubDiscountedPrice": 23912.8,
+            "techSizeName": "0"
+          }
+        ],
+        "currencyIsoCode4217": "RUB",
+        "discount": 60,
+        "clubDiscount": 0,
+        "editableSizePrice": false
+      },
+      {
+        "nmID": 151509234,
+        "vendorCode": "герметон7Л0337002ш4",
+        "sizes": [
+          {
+            "sizeID": 253784775,
+            "price": 56776,
+            "discountedPrice": 22142.64,
+            "clubDiscountedPrice": 22142.64,
+            "techSizeName": "0"
+          }
+        ],
+        "currencyIsoCode4217": "RUB",
+        "discount": 61,
+        "clubDiscount": 0,
+        "editableSizePrice": false
+      },
+      {
+        "nmID": 151509352,
+        "vendorCode": "герметонА300337006ш2",
+        "sizes": [
+          {
+            "sizeID": 253784898,
+            "price": 53436,
+            "discountedPrice": 20840.04,
+            "clubDiscountedPrice": 20840.04,
+            "techSizeName": "0"
+          }
+        ],
+        "currencyIsoCode4217": "RUB",
+        "discount": 61,
+        "clubDiscount": 0,
+        "editableSizePrice": false
+      },
+      {
+        "nmID": 151509273,
+        "vendorCode": "герметонА15Л0337004ш3",
+        "sizes": [
+          {
+            "sizeID": 253784819,
+            "price": 53000,
+            "discountedPrice": 20670,
+            "clubDiscountedPrice": 20670,
+            "techSizeName": "0"
+          }
+        ],
+        "currencyIsoCode4217": "RUB",
+        "discount": 61,
+        "clubDiscount": 0,
+        "editableSizePrice": false
+      },
+      {
+        "nmID": 151509346,
+        "vendorCode": "Practik3.0/15шт",
+        "sizes": [
+          {
+            "sizeID": 253784894,
+            "price": 52109,
+            "discountedPrice": 20322.51,
+            "clubDiscountedPrice": 20322.51,
+            "techSizeName": "0"
+          }
+        ],
+        "currencyIsoCode4217": "RUB",
+        "discount": 61,
+        "clubDiscount": 0,
+        "editableSizePrice": false
+      }
+    ]
+  },
+  "error": false,
+  "errorText": ""
+}

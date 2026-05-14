@@ -1,0 +1,553 @@
+/**
+ * Репрайсер WB 3.0 - с обновлёнными endpoint-ами (2026-05-12)
+ * Автоматическое обновление цен на Wildberries
+ */
+
+// === КОНФИГУРАЦИЯ ===
+const CONFIG = {
+  // === АКТУАЛЬНЫЕ API ENDPOINTS WB (2026) ===
+  WB_API_BASE: 'https://content-api.wildberries.ru',
+
+  // Конкретные эндпоинты для разных операций
+  ENDPOINTS: {
+    // Получение списка товаров (пробуем несколько вариантов)
+    PRODUCTS: '/content/v1/get/cards/list', // основной вариант
+    PRODUCTS_CURSOR: '/content/v2/cards/cursor/list', // альтернатива с курсором
+
+    // Получение цен товаров
+    PRICES_GET: '/content/v1/pricing', // основной вариант
+    PRICES_GET_V2: '/content/v2/pricing', // альтернатива
+
+    // Загрузка цен в ЛК
+    PRICES_UPLOAD: '/content/v1/prices', // основной вариант
+    PRICES_UPLOAD_V2: '/content/v2/prices' // альтернатива
+  },
+
+  // Сайт WB для парсинга
+  WB_SITE: 'https://www.wildberries.ru',
+
+  // Листы таблицы
+  SHEETS: {
+    PRODUCTS: 'Товары',
+    SETTINGS: 'Настройки',
+    LOG: 'Лог',
+    LOG_PARSING: 'Лог парсинга',
+    INSTRUCTION: 'Инструкция'
+  },
+
+  // Столбцы (1-indexed)
+  COLS: {
+    PHOTO: 1,
+    WB_ID: 2,
+    VENDOR_CODE: 3,
+    NAME: 4,
+    BRAND: 5,
+    RRP: 6,
+    MIN_PRICE: 7,
+    MODEL: 8,
+    BASIC_PRICE: 9,
+    SELLER_DISCOUNT: 10,
+    SELLER_PRICE: 11,
+    SITE_PRICE_NO_WALLET: 12,
+    WB_DISCOUNT: 13,
+    SITE_PRICE_WITH_WALLET: 14,
+    WALLET_PERCENT: 15,
+    UPLOAD_PRICE: 16,
+    STATUS: 17
+  },
+
+  // Столбцы листа лога парсинга
+  PARSING_LOG_COLS: {
+    VENDOR_CODE: 1,
+    WB_ID: 2,
+    PARSING_DATE: 3,
+    PARSING_TIME: 4,
+    PRICE_NO_WALLET: 5,
+    PRICE_WITH_WALLET: 6,
+    STATUS: 7
+  }
+};
+
+// === УПРАВЛЕНИЕ НАСТРОЙКАМИ ===
+
+/**
+ * Получить настройки из PropertiesService
+ */
+function getSettings() {
+  const props = PropertiesService.getScriptProperties();
+  return {
+    apiKeyRead: props.getProperty('API_KEY_READ'),
+    apiKeyWrite: props.getProperty('API_KEY_WRITE'),
+    authToken: props.getProperty('AUTH_TOKEN'),
+    updateInterval: parseInt(props.getProperty('UPDATE_INTERVAL') || '30'),
+    updateIntervalType: props.getProperty('UPDATE_INTERVAL_TYPE') || 'minutes',
+    priceThreshold: parseFloat(props.getProperty('PRICE_THRESHOLD') || '5'),
+    email: props.getProperty('EMAIL')
+  };
+}
+
+/**
+ * Сохранить настройки в PropertiesService
+ */
+function saveSettings(settings) {
+  const props = PropertiesService.getScriptProperties();
+  props.setProperty('API_KEY_READ', settings.apiKeyRead || '');
+  props.setProperty('API_KEY_WRITE', settings.apiKeyWrite || '');
+  props.setProperty('AUTH_TOKEN', settings.authToken || '');
+  props.setProperty('UPDATE_INTERVAL', String(settings.updateInterval || 30));
+  props.setProperty('UPDATE_INTERVAL_TYPE', settings.updateIntervalType || 'minutes');
+  props.setProperty('PRICE_THRESHOLD', String(settings.priceThreshold || 5));
+  props.setProperty('EMAIL', settings.email || '');
+}
+
+/**
+ * Прочитать настройки из листа "Настройки"
+ */
+function syncSettingsFromSheet() {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(CONFIG.SHEETS.SETTINGS);
+  if (!sheet) {
+    throw new Error('Лист "Настройки" не найден');
+  }
+
+  const data = sheet.getDataRange().getValues();
+  const settings = {};
+
+  data.forEach((row) => {
+    const param = String(row[0]).trim();
+    const value = String(row[1] || '').trim();
+
+    switch (param) {
+      case 'API ключ WB (только чтение)':
+        settings.apiKeyRead = value;
+        break;
+      case 'API ключ WB (чтение+запись)':
+        settings.apiKeyWrite = value;
+        break;
+      case 'Токен авторизованного пользователя WB':
+        settings.authToken = value;
+        break;
+      case 'Частота автообновления':
+        settings.updateInterval = parseInt(value);
+        break;
+      case 'Тип частоты':
+        settings.updateIntervalType = value.includes('час') ? 'hours' : 'minutes';
+        break;
+      case 'Пороговая разница цен (руб)':
+        settings.priceThreshold = parseFloat(value);
+        break;
+      case 'Email для уведомлений':
+        settings.email = value;
+        break;
+    }
+  });
+
+  saveSettings(settings);
+  return settings;
+}
+
+// === API ЗАПРОСЫ К WB ===
+
+/**
+ * Выполнить HTTP запрос к API WB с автоматическим retry
+ */
+function fetchWBApi(endpoint, method, apiKey, data) {
+  const url = CONFIG.WB_API_BASE + endpoint;
+  console.log('WB API Request: ' + method + ' ' + url);
+  console.log('Authorization: Bearer ' + apiKey.substring(0, 30) + '...');
+
+  const options = {
+    method: method,
+    headers: {
+      'Authorization': 'Bearer ' + apiKey,
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      'User-Agent': 'Mozilla/5.0 (compatible; WB-Repricer/3.0)'
+    },
+    muteHttpExceptions: true
+  };
+
+  if (data) {
+    console.log('Body:', JSON.stringify(data, null, 2));
+    options.payload = JSON.stringify(data);
+  }
+
+  const response = UrlFetchApp.fetch(url, options);
+  const responseCode = response.getResponseCode();
+  const responseText = response.getContentText();
+
+  console.log('Response code: ' + responseCode);
+  console.log('Response body (первые 500 символов):', responseText.substring(0, 500));
+
+  if (responseCode >= 400) {
+    console.error('API Error Response:', responseText);
+    throw new Error('API Error ' + responseCode + ': ' + responseText);
+  }
+
+  const parsed = JSON.parse(responseText);
+  console.log('Успешно! Ключи ответа:', Object.keys(parsed));
+  return parsed;
+}
+
+/**
+ * Получить список товаров с WB API (пробуем несколько endpoint-ов)
+ */
+function fetchProducts() {
+  const settings = getSettings();
+  if (!settings.apiKeyRead) {
+    throw new Error('API ключ (чтение) не настроен');
+  }
+
+  console.log('\n' + '='.repeat(60));
+  console.log('ЗАГРУЗКА ТОВАРОВ ИЗ WB API');
+  console.log('='.repeat(60));
+
+  let allProducts = [];
+  const endpoints = [
+    CONFIG.ENDPOINTS.PRODUCTS,
+    CONFIG.ENDPOINTS.PRODUCTS_CURSOR
+  ];
+
+  for (const endpoint of endpoints) {
+    console.log('\nПробую endpoint: ' + CONFIG.WB_API_BASE + endpoint);
+
+    try {
+      // Пробуем получить список nmIDs всех товаров
+      const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(CONFIG.SHEETS.PRODUCTS);
+      if (!sheet) {
+        throw new Error('Лист "Товары" не найден');
+      }
+
+      const data = sheet.getDataRange().getValues();
+      const nmIds = [];
+
+      // Пропускаем заголовок
+      for (let i = 1; i < data.length; i++) {
+        if (data[i][CONFIG.COLS.WB_ID - 1]) {
+          nmIds.push(String(data[i][CONFIG.COLS.WB_ID - 1]));
+        }
+      }
+
+      if (nmIds.length === 0) {
+        console.log('В таблице нет товаров для загрузки из API');
+        return [];
+      }
+
+      console.log('Найдено ' + nmIds.length + ' товаров в таблице');
+
+      // Разбиваем на чанки по 100 товаров
+      const chunks = [];
+      for (let i = 0; i < nmIds.length; i += 100) {
+        chunks.push(nmIds.slice(i, i + 100));
+      }
+
+      console.log('Чанков: ' + chunks.length);
+
+      for (let i = 0; i < chunks.length; i++) {
+        console.log('Обработка чанка ' + (i + 1) + '/' + chunks.length + ' (' + chunks[i].length + ' товаров)');
+
+        try {
+          const response = fetchWBApi(endpoint, 'POST', settings.apiKeyRead, {
+            nmIDs: chunks[i],
+            with: { params: true }
+          });
+
+          console.log('Ключи ответа:', Object.keys(response));
+
+          // Проверяем разные варианты структуры ответа
+          let cards = null;
+
+          // Вариант 1: cards
+          if (response.cards) {
+            cards = response.cards;
+            console.log('Найден путь: response.cards (' + cards.length + ' шт)');
+          }
+          // Вариант 2: data
+          else if (response.data) {
+            if (Array.isArray(response.data)) {
+              cards = response.data;
+              console.log('Найден путь: response.data (' + cards.length + ' шт)');
+            } else if (response.data.cards) {
+              cards = response.data.cards;
+              console.log('Найден путь: response.data.cards (' + cards.length + ' шт)');
+            }
+          }
+          // Вариант 3: ответ - это массив
+          else if (Array.isArray(response)) {
+            cards = response;
+            console.log('Найден путь: response - массив (' + cards.length + ' шт)');
+          }
+
+          if (cards && cards.length > 0) {
+            allProducts = allProducts.concat(cards);
+            console.log('Добавлено: ' + cards.length + ' товаров');
+          } else {
+            console.warn('В ответе нет карточек');
+            console.log('Ответ:', JSON.stringify(response, null, 2));
+          }
+
+        } catch (e) {
+          console.error('Ошибка в чанке ' + (i + 1) + ':', e.message);
+        }
+
+        Utilities.sleep(300);
+      }
+
+      if (allProducts.length > 0) {
+        console.log('\nУспешно загружено товаров: ' + allProducts.length);
+        return allProducts;
+      }
+
+    } catch (e) {
+      console.log('Endpoint ' + endpoint + ' не сработал:', e.message);
+      console.log('Пробую следующий endpoint...\n');
+    }
+  }
+
+  throw new Error('Все endpoint-ы для товаров не сработали');
+}
+
+/**
+ * Получить цены товаров с WB API
+ */
+function fetchPrices(nmIds) {
+  const settings = getSettings();
+  if (!settings.apiKeyRead) {
+    throw new Error('API ключ (чтение) не настроен');
+  }
+
+  console.log('\n' + '='.repeat(60));
+  console.log('ЗАГРУЗКА ЦЕН ИЗ WB API');
+  console.log('='.repeat(60));
+  console.log('Товаров для запроса: ' + nmIds.length);
+
+  // Пробуем несколько endpoint-ов
+  const endpoints = [
+    CONFIG.ENDPOINTS.PRICES_GET,
+    CONFIG.ENDPOINTS.PRICES_GET_V2
+  ];
+
+  const prices = [];
+
+  for (const endpoint of endpoints) {
+    console.log('\nПробую endpoint: ' + CONFIG.WB_API_BASE + endpoint);
+
+    // Разбиваем на пакеты по 100 товаров
+    const chunks = [];
+    for (let i = 0; i < nmIds.length; i += 100) {
+      chunks.push(nmIds.slice(i, i + 100));
+    }
+
+    console.log('Всего чанков: ' + chunks.length);
+
+    for (let i = 0; i < chunks.length; i++) {
+      console.log('Обработка чанка ' + (i + 1) + '/' + chunks.length);
+
+      try {
+        let response = fetchWBApi(endpoint, 'POST', settings.apiKeyRead, {
+          nmIDs: chunks[i]
+        });
+
+        let priceData = null;
+
+        // Вариант 1: data
+        if (response.data) {
+          priceData = response.data;
+        }
+        // Вариант 2: ответ - это массив
+        else if (Array.isArray(response)) {
+          priceData = response;
+        }
+        // Вариант 3: prices
+        else if (response.prices) {
+          priceData = response.prices;
+        }
+
+        if (priceData && Array.isArray(priceData)) {
+          prices.push.apply(prices, priceData);
+          console.log('Получено цен: ' + priceData.length);
+        } else {
+          console.warn('Не найдены цены в ответе');
+        }
+
+      } catch (e) {
+        console.error('Ошибка при загрузке цен для чанка ' + (i + 1) + ':', e.message);
+      }
+
+      Utilities.sleep(300);
+    }
+
+    if (prices.length > 0) {
+      console.log('\nУспешно загружено цен: ' + prices.length);
+      return prices;
+    }
+  }
+
+  throw new Error('Не удалось загрузить цены ни с одного endpoint-а');
+}
+
+/**
+ * Загрузить цены в ЛК WB
+ */
+function uploadPricesToWB(prices) {
+  const settings = getSettings();
+  if (!settings.apiKeyWrite) {
+    throw new Error('API ключ (запись) не настроен');
+  }
+
+  console.log('\n' + '='.repeat(60));
+  console.log('ЗАГРУЗКА ЦЕН В ЛК WB');
+  console.log('='.repeat(60));
+  console.log('Цен для загрузки: ' + prices.length);
+
+  // Пробуем несколько endpoint-ов
+  const endpoints = [
+    CONFIG.ENDPOINTS.PRICES_UPLOAD,
+    CONFIG.ENDPOINTS.PRICES_UPLOAD_V2
+  ];
+
+  for (const endpoint of endpoints) {
+    console.log('\nПробую endpoint: ' + CONFIG.WB_API_BASE + endpoint);
+
+    try {
+      const response = fetchWBApi(endpoint, 'POST', settings.apiKeyWrite, {
+        prices: prices
+      });
+
+      console.log('\n' + '='.repeat(60));
+      console.log('Цены загружены через ' + endpoint);
+      console.log('='.repeat(60));
+      return response;
+    } catch (e) {
+      console.log('Endpoint ' + endpoint + ' не сработал:', e.message);
+      console.log('Пробую следующий endpoint...\n');
+    }
+  }
+
+  throw new Error('Все endpoint-ы для загрузки цен не сработали');
+}
+
+// === ЛОГИРОВАНИЕ ===
+
+/**
+ * Добавить запись в лог
+ */
+function addToLog(vendorCode, action, oldPrice, newPrice, status, message) {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(CONFIG.SHEETS.LOG);
+  if (!sheet) {
+    throw new Error('Лист "Лог" не найден');
+  }
+
+  const now = new Date();
+  const dateTime = Utilities.formatDate(now, 'Asia/Yekaterinburg', 'yyyy-MM-dd HH:mm:ss');
+
+  sheet.appendRow([
+    dateTime,
+    vendorCode || '',
+    action,
+    oldPrice || '',
+    newPrice || '',
+    status,
+    message
+  ]);
+}
+
+// === МЕНЮ ===
+
+/**
+ * Создать меню в таблице
+ */
+function onOpen() {
+  console.log('onOpen - создаю меню Репрайсер WB 3.0');
+
+  const ui = SpreadsheetApp.getUi();
+  const menu = ui.createMenu('Репрайсер WB 3.0');
+
+  menu.addItem('Загрузить товары из WB', 'loadProductsFromWB');
+  menu.addItem('Получить цены из WB API', 'fetchPricesFromWB');
+  menu.addSeparator();
+  menu.addItem('Синхронизировать настройки', 'syncSettingsFromSheet');
+
+  menu.addToUi();
+}
+
+// === ПУБЛИЧНЫЕ ФУНКЦИИ (вызываются из меню) ===
+
+/**
+ * Загрузить товары из WB (основная функция)
+ */
+function loadProductsFromWB() {
+  console.log('\n' + '='.repeat(80));
+  console.log('НАЧАЛО ЗАГРУЗКИ ТОВАРОВ ИЗ WB API');
+  console.log('='.repeat(80));
+
+  try {
+    syncSettingsFromSheet();
+    const products = fetchProducts();
+
+    const result = 'Загружено товаров: ' + products.length;
+    console.log(result);
+
+    addToLog('', 'Загрузка товаров', '', '', 'Успех', result);
+    SpreadsheetApp.getUi().alert(result);
+
+    return result;
+  } catch (e) {
+    console.error('Ошибка загрузки товаров:', e);
+    console.error('Stack:', e.stack);
+
+    addToLog('', 'Загрузка товаров', '', '', 'Ошибка', e.message);
+    SpreadsheetApp.getUi().alert('Ошибка: ' + e.message);
+
+    throw e;
+  }
+}
+
+/**
+ * Получить цены из WB API
+ */
+function fetchPricesFromWB() {
+  console.log('\n' + '='.repeat(80));
+  console.log('НАЧАЛО ЗАГРУЗКИ ЦЕН ИЗ WB API');
+  console.log('='.repeat(80));
+
+  try {
+    syncSettingsFromSheet();
+
+    // Получаем nmIDs из таблицы
+    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(CONFIG.SHEETS.PRODUCTS);
+    if (!sheet) {
+      throw new Error('Лист "Товары" не найден');
+    }
+
+    const data = sheet.getDataRange().getValues();
+    const nmIds = [];
+
+    for (let i = 1; i < data.length; i++) {
+      if (data[i][CONFIG.COLS.WB_ID - 1]) {
+        nmIds.push(String(data[i][CONFIG.COLS.WB_ID - 1]));
+      }
+    }
+
+    if (nmIds.length === 0) {
+      throw new Error('В таблице нет товаров');
+    }
+
+    const prices = fetchPrices(nmIds);
+
+    const result = 'Загружено цен: ' + prices.length;
+    console.log(result);
+
+    addToLog('', 'Получение цен', '', '', 'Успех', result);
+    SpreadsheetApp.getUi().alert(result);
+
+    return result;
+  } catch (e) {
+    console.error('Ошибка загрузки цен:', e);
+    console.error('Stack:', e.stack);
+
+    addToLog('', 'Получение цен', '', '', 'Ошибка', e.message);
+    SpreadsheetApp.getUi().alert('Ошибка: ' + e.message);
+
+    throw e;
+  }
+}
